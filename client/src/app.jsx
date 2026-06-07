@@ -9,7 +9,6 @@ import { SparkIcon } from './components/icons.jsx'
 import { TuningHeader } from './components/tuning-header.jsx'
 import { TopicNav } from './components/topic-nav.jsx'
 import { ArticleCard } from './components/article-card.jsx'
-import { ReaderSheet } from './components/reader-sheet.jsx'
 import { SourcesSheet } from './components/sources-sheet.jsx'
 import { SettingsSheet } from './components/settings-sheet.jsx'
 import { RescueSection } from './components/rescue-section.jsx'
@@ -74,7 +73,6 @@ export default function App() {
   useEffect(() => { saveAppState({ ratings, enabledSources }) }, [ratings, enabledSources])
 
   // UI state
-  const [reader, setReader] = useState(null)
   const [sourcesOpen, setSourcesOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [active, setActive] = useState('top')
@@ -164,9 +162,10 @@ export default function App() {
 
   return (
     <div style={{
-      width: '100%', maxWidth: 480, minHeight: '100vh',
+      width: '100%', maxWidth: 480, height: '100dvh',
       background: T.bg, position: 'relative',
       display: 'flex', flexDirection: 'column',
+      overflow: 'hidden',
       boxShadow: '0 0 60px rgba(0,0,0,0.1)',
     }}>
       <TuningHeader
@@ -185,7 +184,7 @@ export default function App() {
       <div
         ref={scrollRef}
         onScroll={onScroll}
-        style={{ flex: 1, overflow: 'auto', WebkitOverflowScrolling: 'touch' }}
+        style={{ flex: 1, overflow: 'auto', WebkitOverflowScrolling: 'touch', position: 'relative' }}
       >
         {loading && <LoadingState T={T} />}
         {error && !loading && (
@@ -208,10 +207,9 @@ export default function App() {
                     padding: T.card === 'soft' ? '0 14px' : (T.card === 'paper' ? '0 14px' : '0'),
                   }}>
                     {arts.map(a => (
-                      <ArticleCard key={a.id} T={T} article={a} clamp={settings.summaryLines}
+                      <ArticleCard key={a.id} T={T} article={a}
                         rating={ratings[a.id] || 0}
-                        onRate={v => handleRate(a, v, false)}
-                        onOpen={setReader} />
+                        onRate={v => handleRate(a, v, false)} />
                     ))}
                   </div>
                 </section>
@@ -223,7 +221,6 @@ export default function App() {
               articles={rescueArticles}
               ratings={ratings}
               onRate={(article, v) => handleRate(article, v, true)}
-              onOpen={setReader}
               onShuffle={refreshRescue}
             />
 
@@ -232,7 +229,6 @@ export default function App() {
         )}
       </div>
 
-      <ReaderSheet T={T} article={reader} onClose={() => setReader(null)} />
       <SourcesSheet T={T} open={sourcesOpen} enabled={enabledSources}
         onToggle={toggleSource} onAll={setAllSources} onClose={() => setSourcesOpen(false)} />
       <SettingsSheet T={T} open={settingsOpen} settings={settings} setSetting={setSetting} onClose={() => setSettingsOpen(false)} />

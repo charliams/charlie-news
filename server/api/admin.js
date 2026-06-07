@@ -57,7 +57,22 @@ router.post('/ingest', async (req, res) => {
   runIngestion().catch(err => console.error('[Admin] Ingest error:', err.message))
 })
 
-// POST /api/update-profile — manual trigger
+// PUT /api/profile — save profile text directly
+router.put('/profile', async (req, res) => {
+  const { content } = req.body
+  if (typeof content !== 'string') return res.status(400).json({ error: 'content required' })
+  try {
+    await db.query(
+      'UPDATE profile SET content = $1, updated_at = NOW() WHERE id = 1',
+      [content.trim()]
+    )
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/update-profile — manual trigger (AI rewrite from feedback)
 router.post('/update-profile', async (req, res) => {
   if (!checkToken(req, res)) return
   try {

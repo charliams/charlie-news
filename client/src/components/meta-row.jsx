@@ -10,7 +10,7 @@ function timeAgo(mins) {
 export { timeAgo }
 
 export function MetaRow({ T, src, mins, read }) {
-  if (!src) return null
+  if (!src || !src.name) return null
   const style = T.labelStyle
   let labelCss = { color: T.sub, fontFamily: T.labelFont, fontSize: 12.5 }
   let nameCss = {}

@@ -21,8 +21,10 @@ export async function runIngestion() {
   console.log(`[Ingest] Starting run #${runId}`)
 
   try {
-    // 1. Fetch all RSS feeds
-    const rawArticles = await fetchAllFeeds()
+    // 1. Fetch all RSS feeds (static + custom sources from DB)
+    const { rows: customRows } = await db.query('SELECT url, source_id, topics FROM custom_sources')
+    const extraFeeds = customRows.map(r => ({ url: r.url, sourceId: r.source_id, topics: r.topics }))
+    const rawArticles = await fetchAllFeeds(extraFeeds)
 
     // 2. Add cluster keys
     const withKeys = rawArticles.map(a => ({ ...a, cluster_key: clusterKey(a.headline) }))

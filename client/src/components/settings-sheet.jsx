@@ -1,5 +1,5 @@
 import React from 'react'
-import { THEME_LIST, ACCENT_OPTIONS } from '../themes.js'
+import { ACCENT_OPTIONS } from '../themes.js'
 
 function Switch({ T, on, onToggle, label }) {
   return (
@@ -15,26 +15,6 @@ function Switch({ T, on, onToggle, label }) {
           transition: 'left .22s cubic-bezier(.34,1.4,.64,1)',
         }} />
       </button>
-    </div>
-  )
-}
-
-function SegmentedControl({ T, options, value, onChange, labelFn }) {
-  return (
-    <div style={{ display: 'flex', gap: 6, padding: '4px 0 12px' }}>
-      {options.map(opt => {
-        const active = value === opt
-        return (
-          <button key={opt} onClick={() => onChange(opt)} style={{
-            flex: 1, height: 38, borderRadius: T.radius > 10 ? 10 : 6,
-            border: `1px solid ${active ? T.accent : T.hairline}`,
-            background: active ? T.accent : 'transparent',
-            color: active ? '#fff' : T.sub,
-            fontFamily: T.bodyFont, fontWeight: 600, fontSize: 13.5,
-            cursor: 'pointer', transition: 'background .18s, border-color .18s, color .18s',
-          }}>{labelFn ? labelFn(opt) : opt}</button>
-        )
-      })}
     </div>
   )
 }
@@ -80,15 +60,6 @@ export function SettingsSheet({ T, open, settings, setSetting, onClose }) {
         </div>
 
         <div style={{ overflow: 'auto', padding: '4px 22px 32px' }}>
-          <SectionLabel T={T}>Theme</SectionLabel>
-          <SegmentedControl
-            T={T}
-            options={THEME_LIST.map(t => t.id)}
-            value={settings.theme}
-            onChange={v => setSetting('theme', v)}
-            labelFn={id => THEME_LIST.find(t => t.id === id)?.label || id}
-          />
-
           <SectionLabel T={T}>Accent colour</SectionLabel>
           <div style={{ display: 'flex', gap: 10, padding: '4px 0 12px' }}>
             {ACCENT_OPTIONS.map(opt => {
@@ -109,15 +80,6 @@ export function SettingsSheet({ T, open, settings, setSetting, onClose }) {
 
           <SectionLabel T={T}>Mode</SectionLabel>
           <Switch T={T} label="Dark mode" on={settings.dark} onToggle={() => setSetting('dark', !settings.dark)} />
-
-          <SectionLabel T={T}>Summary length</SectionLabel>
-          <SegmentedControl
-            T={T}
-            options={[2, 3, 5]}
-            value={settings.summaryLines}
-            onChange={v => setSetting('summaryLines', v)}
-            labelFn={v => v === 2 ? 'Short' : v === 3 ? 'Medium' : 'Full'}
-          />
         </div>
       </div>
     </div>

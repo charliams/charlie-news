@@ -44,3 +44,12 @@ CREATE TABLE IF NOT EXISTS ingestion_runs (
 );
 
 INSERT INTO profile (id, content) VALUES (1, '') ON CONFLICT (id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS custom_sources (
+  id        SERIAL PRIMARY KEY,
+  name      TEXT NOT NULL,
+  url       TEXT NOT NULL UNIQUE,
+  source_id TEXT NOT NULL,
+  topics    TEXT[] NOT NULL DEFAULT ARRAY['world']::TEXT[],
+  added_at  TIMESTAMPTZ DEFAULT NOW()
+);

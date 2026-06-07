@@ -21,8 +21,11 @@ function RateNudge({ T, rating }) {
   )
 }
 
-export function ArticleCard({ T, article, rating, onRate, onOpen, clamp = 3, sources = SOURCES }) {
-  const src = sources[article.sourceId || article.source]
+export function ArticleCard({ T, article, rating, onRate, sources = SOURCES }) {
+  const src = sources[article.sourceId || article.source] || {
+    name: article.sourceId || article.source || 'Unknown',
+    tone: '#888888',
+  }
   const up = rating === 1, down = rating === -1
 
   const RateBtn = ({ dir }) => {
@@ -92,7 +95,7 @@ export function ArticleCard({ T, article, rating, onRate, onOpen, clamp = 3, sou
         </div>
       )}
       <h3
-        onClick={() => onOpen(article)}
+        onClick={() => window.open(article.url, '_blank', 'noreferrer')}
         style={{
           margin: '9px 0 0', cursor: 'pointer',
           fontFamily: T.headlineFont, fontWeight: T.headlineWeight,
@@ -104,7 +107,6 @@ export function ArticleCard({ T, article, rating, onRate, onOpen, clamp = 3, sou
       <p style={{
         margin: '8px 0 0', fontFamily: T.bodyFont,
         fontSize: 14.5, lineHeight: 1.5, color: T.sub, textWrap: 'pretty',
-        display: '-webkit-box', WebkitLineClamp: clamp, WebkitBoxOrient: 'vertical', overflow: 'hidden',
       }}>{article.summary}</p>
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 8, marginLeft: -8 }}>
         <RateBtn dir={1} />

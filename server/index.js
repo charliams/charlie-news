@@ -9,6 +9,7 @@ import feedRouter from './api/feed.js'
 import rescueRouter from './api/rescue.js'
 import feedbackRouter from './api/feedback.js'
 import adminRouter from './api/admin.js'
+import sourcesRouter from './api/sources.js'
 import { runIngestion } from './pipeline/ingest.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -21,6 +22,7 @@ app.use(express.json())
 app.use('/api/feed', feedRouter)
 app.use('/api/rescue', rescueRouter)
 app.use('/api/feedback', feedbackRouter)
+app.use('/api/sources', sourcesRouter)
 app.use('/api', adminRouter)
 
 // Serve Vite build

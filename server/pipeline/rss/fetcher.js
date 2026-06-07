@@ -22,8 +22,8 @@ async function fetchFeed({ url, sourceId, topics }) {
   }
 }
 
-export async function fetchAllFeeds() {
-  const results = await Promise.all(FEED_MAP.map(fetchFeed))
+export async function fetchAllFeeds(extraFeeds = []) {
+  const results = await Promise.all([...FEED_MAP, ...extraFeeds].map(fetchFeed))
   const all = results.flat()
 
   // Deduplicate by URL

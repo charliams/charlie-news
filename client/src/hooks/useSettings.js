@@ -5,7 +5,6 @@ const DEFAULTS = {
   theme: 'warm',
   accent: 'oklch(0.58 0.14 150)',  // green
   dark: false,
-  summaryLines: 3,
 }
 
 export function useSettings() {

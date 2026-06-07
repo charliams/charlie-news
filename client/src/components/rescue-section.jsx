@@ -2,8 +2,11 @@ import React from 'react'
 import { ThumbUp, ThumbDown, SparkIcon, ShuffleIcon } from './icons.jsx'
 import { SOURCES } from '../data.js'
 
-function RescueRow({ T, article, rating, onRate, onOpen, sources }) {
-  const src = sources[article.sourceId || article.source]
+function RescueRow({ T, article, rating, onRate, sources }) {
+  const src = sources[article.sourceId || article.source] || {
+    name: article.sourceId || article.source || 'Unknown',
+    tone: '#888888',
+  }
   const up = rating === 1, down = rating === -1
 
   const SmallBtn = ({ dir }) => {
@@ -47,7 +50,7 @@ function RescueRow({ T, article, rating, onRate, onOpen, sources }) {
         </div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <h4 onClick={() => onOpen(article)} style={{
+        <h4 onClick={() => window.open(article.url, '_blank', 'noreferrer')} style={{
           flex: 1, margin: 0, cursor: 'pointer',
           fontFamily: T.headlineFont,
           fontWeight: T.card === 'paper' ? 500 : (T.id === 'minimal' ? 600 : 700),
@@ -75,7 +78,7 @@ function RescueRow({ T, article, rating, onRate, onOpen, sources }) {
   )
 }
 
-export function RescueSection({ T, articles, ratings, onRate, onOpen, onShuffle, sources = SOURCES }) {
+export function RescueSection({ T, articles, ratings, onRate, onShuffle, sources = SOURCES }) {
   const [expanded, setExpanded] = React.useState(false)
   if (!articles.length) return null
 
@@ -111,7 +114,6 @@ export function RescueSection({ T, articles, ratings, onRate, onOpen, onShuffle,
           <RescueRow key={item.id} T={T} article={item}
             rating={ratings[item.id] || 0}
             onRate={v => onRate(item, v)}
-            onOpen={onOpen}
             sources={sources} />
         ))}
       </div>
