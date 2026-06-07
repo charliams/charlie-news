@@ -10,6 +10,7 @@ import rescueRouter from './api/rescue.js'
 import feedbackRouter from './api/feedback.js'
 import adminRouter from './api/admin.js'
 import sourcesRouter from './api/sources.js'
+import flagsRouter from './api/flags.js'
 import { runIngestion } from './pipeline/ingest.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -23,6 +24,7 @@ app.use('/api/feed', feedRouter)
 app.use('/api/rescue', rescueRouter)
 app.use('/api/feedback', feedbackRouter)
 app.use('/api/sources', sourcesRouter)
+app.use('/api/flags', flagsRouter)
 app.use('/api', adminRouter)
 
 // Serve Vite build

@@ -70,7 +70,16 @@ export default function App() {
   const persisted = useMemo(loadAppState, [])
   const [ratings, setRatings] = useState(persisted.ratings || {})
   const [enabledSources, setEnabledSources] = useState(persisted.enabledSources || {})
-  useEffect(() => { saveAppState({ ratings, enabledSources }) }, [ratings, enabledSources])
+  const [savedIds, setSavedIds] = useState(() => persisted.savedIds || [])
+  const [savedData, setSavedData] = useState(() => persisted.savedData || {})
+  const [flaggedIds, setFlaggedIds] = useState(() => new Set(persisted.flaggedIds || []))
+
+  useEffect(() => {
+    saveAppState({
+      ratings, enabledSources, savedIds, savedData,
+      flaggedIds: Array.from(flaggedIds),
+    })
+  }, [ratings, enabledSources, savedIds, savedData, flaggedIds])
 
   // UI state
   const [sourcesOpen, setSourcesOpen] = useState(false)
@@ -125,6 +134,41 @@ export default function App() {
     }
   }, [submitFeedback, flashToast])
 
+  const handleSave = useCallback((article) => {
+    const id = article.id
+    setSavedIds(prev => {
+      if (prev.includes(id)) {
+        flashToast('Removed from saved')
+        return prev.filter(x => x !== id)
+      } else {
+        flashToast('Saved ✓')
+        return [id, ...prev]
+      }
+    })
+    setSavedData(prev => {
+      if (prev[id]) {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      }
+      return { ...prev, [id]: article }
+    })
+  }, [flashToast])
+
+  const handleFlag = useCallback(async (article, note) => {
+    try {
+      await fetch('/api/flags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId: article.id, headline: article.headline, note }),
+      })
+      setFlaggedIds(prev => new Set([...prev, article.id]))
+      flashToast('Flagged ✓')
+    } catch {
+      flashToast('Could not submit flag')
+    }
+  }, [flashToast])
+
   const onScroll = useCallback(() => {
     const sc = scrollRef.current
     if (!sc) return
@@ -141,10 +185,15 @@ export default function App() {
   const scrollToTopic = useCallback(tid => {
     const sc = scrollRef.current
     if (!sc) return
-    if (tid === 'top') { sc.scrollTo({ top: 0, behavior: 'smooth' }); return }
+    if (tid === 'top' || tid === 'saved') { sc.scrollTo({ top: 0, behavior: 'smooth' }); return }
     const el = sectionRefs.current[tid]
     if (el) sc.scrollTo({ top: Math.max(0, el.offsetTop - 8), behavior: 'smooth' })
   }, [])
+
+  const handleNavPick = useCallback(tid => {
+    setActive(tid)
+    scrollToTopic(tid)
+  }, [scrollToTopic])
 
   const toggleSource = id => setEnabledSources(p => ({ ...p, [id]: p[id] === false }))
   const setAllSources = on => {
@@ -153,12 +202,15 @@ export default function App() {
     setEnabledSources(next)
   }
 
-  const navTopics = [{ id: 'top', label: 'For You' }, ...TOPICS]
+  const navTopics = [{ id: 'top', label: 'For You' }, ...TOPICS, { id: 'saved', label: 'Saved' }]
 
-  // Body background matches theme (fills safe-area / gaps around the centred column)
+  // Body background matches theme
   useEffect(() => {
     document.body.style.background = T.bg
   }, [T.bg])
+
+  // Saved articles view — flat list from savedData, ordered by savedIds
+  const savedArticles = savedIds.map(id => savedData[id]).filter(Boolean)
 
   return (
     <div style={{
@@ -169,12 +221,6 @@ export default function App() {
       boxShadow: '0 0 60px rgba(0,0,0,0.1)',
       paddingTop: 'env(safe-area-inset-top)',
     }}>
-      {/* Only TopicNav is fixed — TuningHeader scrolls inside the content div */}
-      <div style={{ zIndex: 8, borderBottom: scrolled ? `1px solid ${T.hairline}` : '1px solid transparent',
-        transition: 'border-color .25s', flexShrink: 0 }}>
-        <TopicNav T={T} topics={navTopics} affinity={affinity} active={active} onPick={scrollToTopic} />
-      </div>
-
       <div
         ref={scrollRef}
         onScroll={onScroll}
@@ -188,46 +234,97 @@ export default function App() {
           onOpenSources={() => setSourcesOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
         />
-        {loading && <LoadingState T={T} />}
-        {error && !loading && (
-          <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.bodyFont, color: T.faint, fontSize: 14 }}>
-            Could not load feed. Check back soon.
+
+        {/* Nav sticks once header scrolls off-screen */}
+        <TopicNav
+          T={T}
+          topics={navTopics}
+          affinity={affinity}
+          active={active}
+          onPick={handleNavPick}
+          scrolled={scrolled}
+          savedCount={savedIds.length}
+        />
+
+        {/* Saved articles view */}
+        {active === 'saved' && (
+          <div style={{ paddingBottom: 40 }}>
+            {savedArticles.length === 0 ? (
+              <div style={{ padding: '50px 20px', textAlign: 'center', fontFamily: T.bodyFont, color: T.faint, fontSize: 14 }}>
+                No saved articles yet. Tap the bookmark icon on any story.
+              </div>
+            ) : (
+              <div style={{
+                display: 'flex', flexDirection: 'column',
+                gap: T.card === 'soft' ? 12 : 0,
+                padding: T.card === 'soft' ? '14px 14px' : (T.card === 'paper' ? '0 14px' : '0'),
+                marginTop: T.card === 'soft' ? 0 : 8,
+              }}>
+                {savedArticles.map(a => (
+                  <ArticleCard key={a.id} T={T} article={a}
+                    rating={ratings[a.id] || 0}
+                    saved={savedIds.includes(a.id)}
+                    flagged={flaggedIds.has(a.id)}
+                    onRate={v => handleRate(a, v, false)}
+                    onSave={() => handleSave(a)}
+                    onFlag={note => handleFlag(a, note)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {!loading && (
-          <div style={{ paddingBottom: 40 }}>
-            {TOPICS.map(tp => {
-              const arts = visibleFeed.filter(a => a.topic === tp.id)
-              if (!arts.length) return null
-              return (
-                <section key={tp.id} ref={el => sectionRefs.current[tp.id] = el} style={{ marginTop: 6 }}>
-                  <SectionHeader T={T} label={tp.label} />
-                  <div style={{
-                    display: 'flex', flexDirection: 'column',
-                    gap: T.card === 'soft' ? 12 : 0,
-                    padding: T.card === 'soft' ? '0 14px' : (T.card === 'paper' ? '0 14px' : '0'),
-                  }}>
-                    {arts.map(a => (
-                      <ArticleCard key={a.id} T={T} article={a}
-                        rating={ratings[a.id] || 0}
-                        onRate={v => handleRate(a, v, false)} />
-                    ))}
-                  </div>
-                </section>
-              )
-            })}
+        {/* Main feed view */}
+        {active !== 'saved' && (
+          <>
+            {loading && <LoadingState T={T} />}
+            {error && !loading && (
+              <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.bodyFont, color: T.faint, fontSize: 14 }}>
+                Could not load feed. Check back soon.
+              </div>
+            )}
 
-            <RescueSection
-              T={T}
-              articles={rescueArticles}
-              ratings={ratings}
-              onRate={(article, v) => handleRate(article, v, true)}
-              onShuffle={refreshRescue}
-            />
+            {!loading && (
+              <div style={{ paddingBottom: 40 }}>
+                {TOPICS.map(tp => {
+                  const arts = visibleFeed.filter(a => a.topic === tp.id)
+                  if (!arts.length) return null
+                  return (
+                    <section key={tp.id} ref={el => sectionRefs.current[tp.id] = el} style={{ marginTop: 6 }}>
+                      <SectionHeader T={T} label={tp.label} />
+                      <div style={{
+                        display: 'flex', flexDirection: 'column',
+                        gap: T.card === 'soft' ? 12 : 0,
+                        padding: T.card === 'soft' ? '0 14px' : (T.card === 'paper' ? '0 14px' : '0'),
+                      }}>
+                        {arts.map(a => (
+                          <ArticleCard key={a.id} T={T} article={a}
+                            rating={ratings[a.id] || 0}
+                            saved={savedIds.includes(a.id)}
+                            flagged={flaggedIds.has(a.id)}
+                            onRate={v => handleRate(a, v, false)}
+                            onSave={() => handleSave(a)}
+                            onFlag={note => handleFlag(a, note)}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )
+                })}
 
-            <FeedFooter T={T} feedCount={visibleFeed.length} />
-          </div>
+                <RescueSection
+                  T={T}
+                  articles={rescueArticles}
+                  ratings={ratings}
+                  onRate={(article, v) => handleRate(article, v, true)}
+                  onShuffle={refreshRescue}
+                />
+
+                <FeedFooter T={T} feedCount={visibleFeed.length} />
+              </div>
+            )}
+          </>
         )}
       </div>
 

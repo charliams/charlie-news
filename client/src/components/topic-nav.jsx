@@ -1,10 +1,11 @@
 import React from 'react'
 
-export function TopicNav({ T, topics, affinity = {}, active, onPick }) {
+export function TopicNav({ T, topics, affinity = {}, active, onPick, scrolled = false, savedCount = 0 }) {
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: 8, background: T.bg,
-      borderBottom: `1px solid ${T.hairline}`,
+      borderBottom: scrolled ? `1px solid ${T.hairline}` : '1px solid transparent',
+      transition: 'border-color .25s',
     }}>
       <div
         className="chiprow"
@@ -18,6 +19,7 @@ export function TopicNav({ T, topics, affinity = {}, active, onPick }) {
           const isActive = active === tp.id
           const liked = aff > 0
           const round = T.card === 'list' ? 6 : 999
+          const isSaved = tp.id === 'saved'
           return (
             <button key={tp.id} onClick={() => onPick(tp.id)} style={{
               flexShrink: 0, height: 34, padding: '0 14px', borderRadius: round,
@@ -35,7 +37,18 @@ export function TopicNav({ T, topics, affinity = {}, active, onPick }) {
               transition: 'background .2s, color .2s, border-color .2s',
             }}>
               {tp.label}
-              {liked && !isActive && (
+              {isSaved && savedCount > 0 && !isActive && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  minWidth: 18, height: 18, borderRadius: 999,
+                  background: T.accent, color: '#fff',
+                  fontFamily: T.labelFont, fontSize: 10, fontWeight: 700,
+                  padding: '0 4px',
+                }}>
+                  {savedCount}
+                </span>
+              )}
+              {!isSaved && liked && !isActive && (
                 <span style={{ display: 'inline-flex', gap: 2 }}>
                   {Array.from({ length: Math.min(3, aff) }).map((_, i) => (
                     <span key={i} style={{ width: 4, height: 4, borderRadius: 999, background: T.accent }} />

@@ -43,6 +43,25 @@ export function ShuffleIcon({ size = 16, color = 'currentColor' }) {
   )
 }
 
+export function BookmarkIcon({ size = 20, color = 'currentColor', fill = 'none', sw = 1.8 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill}>
+      <path d="M5 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v17l-7-3.5L5 21V4z"
+        stroke={color} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+export function FlagIcon({ size = 20, color = 'currentColor', fill = 'none', sw = 1.8 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill}>
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
+        stroke={color} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"/>
+      <line x1="4" y1="22" x2="4" y2="15" stroke={color} strokeWidth={sw} strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 export function GearIcon({ size = 19, color = 'currentColor' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">

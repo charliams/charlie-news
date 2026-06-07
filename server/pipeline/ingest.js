@@ -67,11 +67,20 @@ export async function runIngestion() {
     const { rows: profileRows } = await db.query('SELECT content FROM profile WHERE id = 1')
     const profileText = profileRows[0]?.content || ''
 
+    // 5b. Fetch unresolved user flags and include as scoring context
+    const { rows: flagRows } = await db.query(
+      `SELECT headline, note FROM article_flags WHERE resolved = false ORDER BY created_at DESC LIMIT 20`
+    )
+    const flagContext = flagRows.length
+      ? '\n\nUser-reported issues with recent articles (factor these into your scoring):\n' +
+        flagRows.map(f => `- "${f.headline}": ${f.note}`).join('\n')
+      : ''
+
     // 6. Summarise
     const summarised = await batchSummarise(newArticles)
 
     // 7. Score
-    const scored = await batchScore(summarised, profileText)
+    const scored = await batchScore(summarised, profileText + flagContext)
 
     // 8. Update articles with summary + score
     let scoredCount = 0
