@@ -13,6 +13,7 @@ router.get('/', async (req, res) => {
       FROM articles
       WHERE score < $1
         AND ingested_at >= NOW() - ($2 || ' days')::INTERVAL
+        AND (published_at IS NULL OR published_at >= NOW() - ($2 || ' days')::INTERVAL)
         AND summary IS NOT NULL
         AND (
           cluster_key IS NULL

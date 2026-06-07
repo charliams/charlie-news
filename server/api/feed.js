@@ -14,6 +14,7 @@ router.get('/', async (req, res) => {
       FROM articles
       WHERE score >= $1
         AND ingested_at >= NOW() - ($2 || ' days')::INTERVAL
+        AND (published_at IS NULL OR published_at >= NOW() - ($2 || ' days')::INTERVAL)
         AND summary IS NOT NULL
       ORDER BY COALESCE(cluster_key, id), score DESC
       LIMIT 20

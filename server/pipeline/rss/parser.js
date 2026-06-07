@@ -78,6 +78,9 @@ export function parseRSSXML(xml, sourceId, allowedTopics) {
 
     if (!title || !link) continue
 
+    // Skip BBC iPlayer — requires UK TV licence
+    if (/bbc\.(co\.uk|com)\/iplayer/i.test(link)) continue
+
     const rawSummary = stripHtml(desc).slice(0, 500)
     const url = link.trim()
 

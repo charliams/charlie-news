@@ -155,29 +155,23 @@ export default function App() {
 
   const navTopics = [{ id: 'top', label: 'For You' }, ...TOPICS]
 
-  // Page background matches theme
+  // Body background matches theme (fills safe-area / gaps around the centred column)
   useEffect(() => {
-    document.body.style.background = T.dark ? '#111' : '#e8e2d8'
-  }, [T.dark, T.bg])
+    document.body.style.background = T.bg
+  }, [T.bg])
 
   return (
     <div style={{
-      width: '100%', maxWidth: 480, height: '100dvh',
+      width: '100%', maxWidth: 480, height: '100%',
       background: T.bg, position: 'relative',
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
       boxShadow: '0 0 60px rgba(0,0,0,0.1)',
+      paddingTop: 'env(safe-area-inset-top)',
     }}>
-      <TuningHeader
-        T={T}
-        dateStr={dateStr}
-        articleCount={visibleFeed.length}
-        scrolled={scrolled}
-        onOpenSources={() => setSourcesOpen(true)}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
-
-      <div style={{ position: 'sticky', top: 0, zIndex: 8 }}>
+      {/* Only TopicNav is fixed — TuningHeader scrolls inside the content div */}
+      <div style={{ zIndex: 8, borderBottom: scrolled ? `1px solid ${T.hairline}` : '1px solid transparent',
+        transition: 'border-color .25s', flexShrink: 0 }}>
         <TopicNav T={T} topics={navTopics} affinity={affinity} active={active} onPick={scrollToTopic} />
       </div>
 
@@ -186,6 +180,14 @@ export default function App() {
         onScroll={onScroll}
         style={{ flex: 1, overflow: 'auto', WebkitOverflowScrolling: 'touch', position: 'relative' }}
       >
+        {/* Header scrolls away with content */}
+        <TuningHeader
+          T={T}
+          dateStr={dateStr}
+          articleCount={visibleFeed.length}
+          onOpenSources={() => setSourcesOpen(true)}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
         {loading && <LoadingState T={T} />}
         {error && !loading && (
           <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: T.bodyFont, color: T.faint, fontSize: 14 }}>
