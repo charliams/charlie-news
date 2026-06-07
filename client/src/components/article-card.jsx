@@ -1,11 +1,22 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import { MetaRow } from './meta-row.jsx'
-import { ThumbUp, ThumbDown, SparkIcon } from './icons.jsx'
+import { ThumbUp, ThumbDown, BookmarkIcon, FlagIcon } from './icons.jsx'
 import { SOURCES } from '../data.js'
+
+function decodeHtml(str) {
+  if (!str) return str
+  return str
+    .replace(/&#(\d+);?/g, (_, n) => String.fromCodePoint(parseInt(n, 10)))
+    .replace(/&#x([0-9a-f]+);?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/&mdash;/g, '—').replace(/&ndash;/g, '–')
+    .replace(/&lsquo;/g, '‘').replace(/&rsquo;/g, '’')
+    .replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”')
+}
 
 function RateNudge({ T, rating }) {
   if (!rating) return null
-  const txt = rating === 1 ? 'Got it ✓' : 'Got it ✓'
   return (
     <span style={{
       marginLeft: 6, fontFamily: T.labelFont,
@@ -17,16 +28,36 @@ function RateNudge({ T, rating }) {
       color: rating === 1 ? T.accent : T.faint,
       display: 'inline-flex', alignItems: 'center', gap: 4,
       animation: 'nudgeIn .3s ease',
-    }}>{txt}</span>
+    }}>Got it ✓</span>
   )
 }
 
-export function ArticleCard({ T, article, rating, onRate, sources = SOURCES }) {
+export function ArticleCard({ T, article, rating, onRate, onSave, onFlag, saved = false, flagged = false, sources = SOURCES }) {
   const src = sources[article.sourceId || article.source] || {
     name: article.sourceId || article.source || 'Unknown',
     tone: '#888888',
   }
   const up = rating === 1, down = rating === -1
+
+  const [flagOpen, setFlagOpen] = useState(false)
+  const [flagText, setFlagText] = useState('')
+  const [flagSubmitting, setFlagSubmitting] = useState(false)
+  const textareaRef = useRef(null)
+
+  const handleFlagClick = () => {
+    if (flagged) return
+    setFlagOpen(v => !v)
+    if (!flagOpen) setTimeout(() => textareaRef.current?.focus(), 50)
+  }
+
+  const handleFlagSubmit = async () => {
+    if (!flagText.trim() || flagSubmitting) return
+    setFlagSubmitting(true)
+    await onFlag(flagText.trim())
+    setFlagText('')
+    setFlagOpen(false)
+    setFlagSubmitting(false)
+  }
 
   const RateBtn = ({ dir }) => {
     const active = dir === 1 ? up : down
@@ -70,7 +101,6 @@ export function ArticleCard({ T, article, rating, onRate, sources = SOURCES }) {
     borderLeft: isList ? `2px solid ${T.accent}` : undefined,
   } : {}
 
-  // Multi-source bar
   const allSrcs = article.allSources || [article.sourceId || article.source]
   const showMultiSource = allSrcs.length > 1
 
@@ -103,16 +133,95 @@ export function ArticleCard({ T, article, rating, onRate, sources = SOURCES }) {
           letterSpacing: T.headlineTracking, color: T.ink,
           textWrap: 'pretty',
         }}
-      >{article.headline}</h3>
+      >{decodeHtml(article.headline)}</h3>
       <p style={{
         margin: '8px 0 0', fontFamily: T.bodyFont,
         fontSize: 14.5, lineHeight: 1.5, color: T.sub, textWrap: 'pretty',
-      }}>{article.summary}</p>
+      }}>{decodeHtml(article.summary)}</p>
+
+      {/* Action row */}
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 8, marginLeft: -8 }}>
         <RateBtn dir={1} />
         <RateBtn dir={-1} />
         <RateNudge T={T} rating={rating} />
+        <div style={{ flex: 1 }} />
+        {/* Save button */}
+        <button
+          onClick={e => { e.stopPropagation(); onSave?.() }}
+          aria-label={saved ? 'Unsave article' : 'Save article'}
+          title={saved ? 'Unsave' : 'Save for later'}
+          style={{
+            width: 36, height: 36, borderRadius: T.card === 'list' ? 8 : 999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: 'none', cursor: 'pointer', flexShrink: 0,
+            background: 'transparent',
+            color: saved ? T.accent : T.faint,
+            transition: 'color .2s, transform .18s cubic-bezier(.34,1.56,.64,1)',
+            transform: saved ? 'scale(1.06)' : 'scale(1)',
+          }}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.85)'}
+          onMouseUp={e => e.currentTarget.style.transform = saved ? 'scale(1.06)' : 'scale(1)'}
+        >
+          <BookmarkIcon size={18} color="currentColor" fill={saved ? 'currentColor' : 'none'} sw={1.8} />
+        </button>
+        {/* Flag button */}
+        <button
+          onClick={e => { e.stopPropagation(); handleFlagClick() }}
+          aria-label={flagged ? 'Already flagged' : 'Flag an issue'}
+          title={flagged ? 'Flagged' : 'Flag an issue'}
+          style={{
+            width: 36, height: 36, borderRadius: T.card === 'list' ? 8 : 999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: 'none', cursor: flagged ? 'default' : 'pointer', flexShrink: 0,
+            background: 'transparent',
+            color: flagged ? T.accent : (flagOpen ? T.ink : T.faint),
+            transition: 'color .2s',
+          }}
+        >
+          <FlagIcon size={17} color="currentColor" fill={flagged ? 'currentColor' : 'none'} sw={1.8} />
+        </button>
       </div>
+
+      {/* Flag textarea — inline, expands below the action row */}
+      {flagOpen && !flagged && (
+        <div style={{ marginTop: 10 }}>
+          <textarea
+            ref={textareaRef}
+            value={flagText}
+            onChange={e => setFlagText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleFlagSubmit() }}
+            placeholder="Describe the issue with this article…"
+            rows={3}
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              fontFamily: T.bodyFont, fontSize: 13.5, lineHeight: 1.5,
+              color: T.ink, background: T.chipBg,
+              border: `1px solid ${T.hairline}`, borderRadius: 8,
+              padding: '8px 10px', resize: 'none', outline: 'none',
+            }}
+          />
+          <div style={{ display: 'flex', gap: 8, marginTop: 6, justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => { setFlagOpen(false); setFlagText('') }}
+              style={{
+                fontFamily: T.labelFont, fontSize: 12.5, color: T.faint,
+                background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px',
+              }}
+            >Cancel</button>
+            <button
+              onClick={handleFlagSubmit}
+              disabled={!flagText.trim() || flagSubmitting}
+              style={{
+                fontFamily: T.labelFont, fontSize: 12.5, fontWeight: 600,
+                color: !flagText.trim() ? T.faint : '#fff',
+                background: !flagText.trim() ? T.chipBg : T.accent,
+                border: 'none', borderRadius: 6, cursor: flagText.trim() ? 'pointer' : 'default',
+                padding: '5px 12px', transition: 'background .2s, color .2s',
+              }}
+            >{flagSubmitting ? 'Sending…' : 'Submit flag'}</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

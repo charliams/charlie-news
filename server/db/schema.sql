@@ -45,6 +45,15 @@ CREATE TABLE IF NOT EXISTS ingestion_runs (
 
 INSERT INTO profile (id, content) VALUES (1, '') ON CONFLICT (id) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS article_flags (
+  id          SERIAL PRIMARY KEY,
+  article_id  TEXT NOT NULL,
+  headline    TEXT,
+  note        TEXT NOT NULL,
+  resolved    BOOLEAN DEFAULT FALSE,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS custom_sources (
   id        SERIAL PRIMARY KEY,
   name      TEXT NOT NULL,

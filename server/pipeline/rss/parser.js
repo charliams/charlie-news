@@ -42,10 +42,10 @@ function decodeEntities(str) {
     .replace(/&nbsp;/g, ' ').replace(/&mdash;/g, '—').replace(/&ndash;/g, '–')
     .replace(/&lsquo;/g, '‘').replace(/&rsquo;/g, '’')
     .replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”')
-    // Numeric decimal entities (e.g. &#8216;)
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(parseInt(n, 10)))
-    // Numeric hex entities (e.g. &#x2018;)
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    // Numeric decimal entities (e.g. &#8216; or &#8216 without semicolon)
+    .replace(/&#(\d+);?/g, (_, n) => String.fromCodePoint(parseInt(n, 10)))
+    // Numeric hex entities (e.g. &#x2018; or &#x2018 without semicolon)
+    .replace(/&#x([0-9a-f]+);?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
 }
 
 function stripHtml(str) {
