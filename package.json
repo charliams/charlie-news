@@ -1,0 +1,27 @@
+{
+  "name": "charlie-news",
+  "version": "1.0.0",
+  "description": "Personal daily news digest with LLM scoring and preference learning",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,client -c cyan,magenta \"node --watch server/index.js\" \"vite client\"",
+    "dev:server": "node --watch server/index.js",
+    "dev:client": "vite client",
+    "build": "vite build client --outDir ../dist",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.11.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "vite": "^5.2.0"
+  }
+}
