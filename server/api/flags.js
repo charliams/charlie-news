@@ -16,9 +16,10 @@ router.post('/', async (req, res) => {
     res.json({ ok: true, id: flag.id })
     // Fire-and-forget: trigger Claude pipeline review
     const webhookUrl = process.env.CLAUDE_FLAG_WEBHOOK_URL
-    if (webhookUrl) fetch(webhookUrl, {
+    const routineToken = process.env.CLAUDE_ROUTINE_TOKEN
+    if (webhookUrl && routineToken) fetch(webhookUrl, {
       method: 'POST',
-      headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY },
+      headers: { 'x-api-key': routineToken },
     }).catch(() => {})
   } catch (err) {
     console.error('[API /flags POST]', err)
