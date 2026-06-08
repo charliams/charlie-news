@@ -3,7 +3,7 @@ export const FEED_MAP = [
   { url: 'https://newsroom.co.nz/feed/', sourceId: 'newsroom', topics: ['nz', 'politics', 'business'] },
 
   // RNZ
-  { url: 'https://www.rnz.co.nz/rss', sourceId: 'rnz', topics: ['nz', 'world'] },
+  { url: 'https://www.rnz.co.nz/rss/news.xml', sourceId: 'rnz', topics: ['nz', 'world'] },
   { url: 'https://www.rnz.co.nz/rss/political.xml', sourceId: 'rnz', topics: ['politics', 'nz'] },
 
   // BBC
