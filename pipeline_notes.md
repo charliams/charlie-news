@@ -1,5 +1,17 @@
 # Pipeline Notes
 
+## 2026-06-11
+
+### Flag review — blocked: network access unavailable
+
+**Question for user:** The remote execution environment's network policy does not permit outbound connections to `notes.charliejmwilliams.com`, so the flag review could not be completed. `curl https://notes.charliejmwilliams.com/api/flags` returns `Host not in allowlist`.
+
+To fix this, add `notes.charliejmwilliams.com` to the allowed hosts in the environment's network policy (see https://code.claude.com/docs/en/claude-code-on-the-web for environment configuration). Once the host is allowlisted, re-run the flag review task.
+
+No flags were reviewed and no changes were made this session.
+
+---
+
 ## 2026-06-08
 
 ### Flags reviewed
