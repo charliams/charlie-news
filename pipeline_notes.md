@@ -1,5 +1,15 @@
 # Pipeline Notes
 
+## 2026-06-16
+
+### Flags reviewed
+
+Routine could not run: `notes.charliejmwilliams.com` is not in the environment's network egress allowlist. Both direct `curl` and the WebFetch fallback failed (403). No `DATABASE_URL` is set in this container either, so the DB cannot be queried directly.
+
+**Action required (user):** Add `notes.charliejmwilliams.com` to the network egress allowlist in your Code on the Web environment settings, or expose the `DATABASE_URL` as a session environment variable so the routine can query flags directly.
+
+---
+
 ## 2026-06-08
 
 ### Flags reviewed
