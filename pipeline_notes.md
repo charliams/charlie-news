@@ -1,5 +1,20 @@
 # Pipeline Notes
 
+## 2026-06-20
+
+### Routine run — flags API unreachable
+
+The scheduled flag-review routine could not complete because `notes.charliejmwilliams.com` was inaccessible from the remote execution environment:
+
+- `curl` → blocked by network egress policy ("Host not in allowlist: notes.charliejmwilliams.com")
+- `WebFetch` → HTTP 403 Forbidden from the server
+
+No flags were fetched, categorised, or resolved. No pipeline code was changed.
+
+**Action required:** Add `notes.charliejmwilliams.com` to the network egress allowlist in the Claude Code on the web environment settings, or investigate why the server returns 403 to the WebFetch proxy IP. Once access is restored the routine will run normally on its next scheduled invocation.
+
+---
+
 ## 2026-06-08
 
 ### Flags reviewed
