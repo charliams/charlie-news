@@ -1,5 +1,25 @@
 # Pipeline Notes
 
+## 2026-06-22
+
+### Flags reviewed
+
+| Flag ID | Headline | Category | Action |
+|---------|----------|----------|--------|
+| — | — | Routine blocked | Could not reach `notes.charliejmwilliams.com` API |
+
+### Changes made
+
+**Routine could not run — network egress blocked**
+
+- Bash `curl` rejected with "Host not in allowlist: notes.charliejmwilliams.com"
+- WebFetch returned HTTP 403 (likely Cloudflare)
+- No flags were fetched, reviewed, or resolved this run
+
+**Action required:** Add `notes.charliejmwilliams.com` to the network egress allowlist in the remote execution environment settings at https://code.claude.com/docs/en/claude-code-on-the-web so the scheduled routine can reach the flags API.
+
+---
+
 ## 2026-06-08
 
 ### Flags reviewed
