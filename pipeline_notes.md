@@ -1,5 +1,19 @@
 # Pipeline Notes
 
+## 2026-06-23
+
+### Flags reviewed
+
+Routine could not run — network blocked.
+
+**Blocker:** The remote execution environment's egress policy does not allow outbound connections to `notes.charliejmwilliams.com`. Both `curl` and `WebFetch` were attempted; `curl` returned "Host not in allowlist" and `WebFetch` returned HTTP 403.
+
+**Action required:** Add `notes.charliejmwilliams.com` to the network egress allowlist in the Claude Code on the web environment settings, then re-run this routine. See: https://code.claude.com/docs/en/claude-code-on-the-web
+
+No flags were reviewed, resolved, or changed.
+
+---
+
 ## 2026-06-08
 
 ### Flags reviewed
