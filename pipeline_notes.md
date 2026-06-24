@@ -1,5 +1,15 @@
 # Pipeline Notes
 
+## 2026-06-24
+
+### Routine run — blocked
+
+Scheduled flag review could not complete. The remote execution environment's network policy blocks outbound HTTPS to `notes.charliejmwilliams.com` (proxy returns 403 on CONNECT). No flags were fetched, no changes were made.
+
+**Action required:** The `notes.charliejmwilliams.com` domain needs to be added to the environment's network allowlist before this routine can run. See `/root/.ccr/README.md` for how to configure outbound policy, or update the environment's network policy in [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web).
+
+---
+
 ## 2026-06-08
 
 ### Flags reviewed
